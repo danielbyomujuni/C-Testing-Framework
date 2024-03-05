@@ -16,7 +16,7 @@ TEST(HelloWorld, EXPECT_NOT_EQUAL) {
 TEST(HelloWorld, EXPECT_TRUE) {
     ASSERT_TRUE(1);
 }
-
+//Fails
 TEST(HelloWorld, EXPECT_FALSE) {
     ASSERT_FALSE(0);
 }
@@ -33,7 +33,19 @@ TEST(GoodbyeWorld, EXPECT_TRUE) {
     ASSERT_TRUE(1);
 }
 
-//fails memory error
 TEST(GoodbyeWorld, EXPECT_FALSE) {
+    ASSERT_FALSE(0);
+}
+
+TEST(Group3, EXPECT_FALSE) {
+    ASSERT_FALSE(0);
+}
+
+TEST(Group4, EXPECT_FALSE) {
+    ASSERT_FALSE(0);
+}
+
+
+TEST(Group5, EXPECT_FALSE) {
     ASSERT_FALSE(0);
 }
