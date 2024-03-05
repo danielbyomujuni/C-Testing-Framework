@@ -26,15 +26,27 @@
 #define ASSERT_EQ( x, y ) \
 do {                      \
     if (x != y) {         \
-        self->did_test_pass = 1;\
+        self->did_test_pass = 0;\
         test_failed(self->test_name);     \
         return; \
     }                     \
-    self->did_test_pass = 0;\
+    self->did_test_pass = 1;\
     test_passed(self->test_name); \
 } while (0)
 
+#define ASSERT_NOT_EQ( x, y ) \
+do {                      \
+    if (x == y) {         \
+        self->did_test_pass = 0;\
+        test_failed(self->test_name);     \
+        return; \
+    }                     \
+    self->did_test_pass = 1;\
+    test_passed(self->test_name); \
+} while (0)
 
+#define ASSERT_TRUE( x ) ASSERT_EQ(x, 1)
+#define ASSERT_FALSE( x ) ASSERT_EQ(x, 0)
 
 
 
@@ -89,7 +101,7 @@ static int run_tests() {
         test_struct test = **it;
         test.run(&test);
 
-        if (test.did_test_pass != 0) {
+        if (test.did_test_pass != 1) {
             did_test_fail = EXIT_FAILURE;
         }
     }

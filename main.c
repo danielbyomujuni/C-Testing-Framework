@@ -9,6 +9,14 @@ TEST(HelloWorld, EXPECT_EQUAL) {
     ASSERT_EQ(1,1);
 }
 
-TEST(HelloWorld, EXPECT_EQUAL_FAIL) {
-    ASSERT_EQ(1,1);
+TEST(HelloWorld, EXPECT_NOT_EQUAL) {
+    ASSERT_NOT_EQ(1,2);
+}
+
+TEST(HelloWorld, EXPECT_TRUE) {
+    ASSERT_TRUE(1);
+}
+
+TEST(HelloWorld, EXPECT_FALSE) {
+    ASSERT_FALSE(0);
 }
