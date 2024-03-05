@@ -87,10 +87,10 @@ static void test_passed(const char* testName) {
     printf("  \033[0;32m[ PASSED ]\033[0;37m %s\n", testName);
 }
 
-static void test_failed_expect(const char* testName, char* expected, char* recived) {
+static void test_failed_expect(const char* testName, char* expected, char* received) {
     printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
     printf("\033[0;31m     Expected: %s\033[0;37m\n", expected);
-    printf("\033[0;31m     Actual:   %s\033[0;37m\n", recived);
+    printf("\033[0;31m     Received:   %s\033[0;37m\n", received);
 }
 
 static void test_failed_not_expect(const char* testName, char* expected, char* received) {
