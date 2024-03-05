@@ -2,10 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define EXIT_FAILURE -1
 #define STATUS_LENGTH 7
 #define MAX_GROUP_LENGTH 80
-#define STR(x) #x
+#define STR(x) strcmp(#x,"((void *)0)") != 0 ? #x : "NULL"\
+
 
 //public macros
 
@@ -49,10 +49,33 @@ do {                      \
     test_passed(self->test_name); \
 } while (0)
 
+#define ASSERT_POINTER_EQ( x, y ) \
+do {                      \
+    if (x != y) {         \
+        self->did_test_pass = 0;\
+        test_failed_expect_pointer(self->test_name, y, x);     \
+        return; \
+    }                     \
+    self->did_test_pass = 1;\
+    test_passed(self->test_name); \
+} while (0)
+
+#define ASSERT_POINTER_NOT_EQ( x, y ) \
+do {                      \
+    if (x == y) {         \
+        self->did_test_pass = 0;\
+        test_failed_not_expect_pointer(self->test_name, y, x); \
+        return; \
+    }                     \
+    self->did_test_pass = 1;\
+    test_passed(self->test_name); \
+} while (0)
+
 #define ASSERT_TRUE( x ) ASSERT_EQ(x, 1)
 #define ASSERT_FALSE( x ) ASSERT_EQ(x, 0)
-#define ASSERT_NULL( x ) ASSERT_EQ((void *) x, NULL)
-#define ASSERT_NOT_NULL( x ) ASSERT_NOT_EQ(x, NULL)
+
+#define ASSERT_NULL( x ) ASSERT_POINTER_EQ(x, NULL)
+#define ASSERT_NOT_NULL( x ) ASSERT_POINTER_NOT_EQ(x, NULL)
 
 //Private Macros and structures
 typedef struct test_struct {
@@ -61,6 +84,11 @@ typedef struct test_struct {
     int did_test_pass;
     void (*run)(struct test_struct *self);
 } test_struct;
+#define is_same_type(a, b)  __builtin_types_compatible_p(typeof(a), typeof(b))
+#define is_pointer_or_array(p)  (__builtin_classify_type(p) == 5)
+#define decay(p)  (&*__builtin_choose_expr(is_pointer_or_array(p), p, NULL))
+#define is_pointer(p)  is_same_type(p, decay(p))
+
 #if defined(__APPLE__)
 #define REGSITER_TEST __attribute__((used, section("__DATA,c_test")))
 #elif defined(__unix__)
@@ -100,6 +128,24 @@ static void test_failed_not_expect(const char* testName, char* expected, char* r
     printf("\033[0;31m     Did Not Expect: %s\033[0;37m\n", expected);
     printf("\033[0;31m     Received:       %s\033[0;37m\n", received);
 }
+
+#define print_pointer(prefix, x) \
+        x == NULL ?      \
+        printf("\033[0;31m     %s NULL\033[0;37m\n", prefix) : \
+        printf("\033[0;31m     %s %p\033[0;37m\n", prefix, x)
+
+static void test_failed_expect_pointer(const char* testName, void* expected, void* received) {
+    printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
+    print_pointer("Expected:",expected);
+    print_pointer("Received:",received);
+}
+
+static void test_failed_not_expect_pointer(const char* testName, void* expected, void* received) {
+    printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
+    print_pointer("Did Not Expect:",expected);
+    print_pointer("Received:      ",received);
+}
+
 static int run_tests() {
     //create test array
     test_struct **tests;

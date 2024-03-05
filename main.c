@@ -60,17 +60,23 @@ TEST(Group5, EXPECT_FALSE) {
 }
 
 TEST(HelloNullWorld, EXPECT_NULL) {
-    ASSERT_NULL(NULL);
+    int *one = NULL;
+    ASSERT_NULL(one);
 }
 
 TEST(HelloNullWorld, EXPECT_NOT_NULL) {
-    ASSERT_NULL(1);
+    int *one = malloc(sizeof(int));
+    *one = 1;
+    ASSERT_NULL(one);
 }
 
 TEST(HelloNullWorld, NOT_EXPECT_NULL_BUT_GOT) {
-    ASSERT_NOT_NULL(NULL);
+    int *one = NULL;
+    ASSERT_NOT_NULL(one);
 }
 
 TEST(HelloNullWorld, NOT_EXPECT_NOT_NULL) {
-    ASSERT_NOT_NULL(1);
+    int *one = malloc(sizeof(int));
+    *one = 1;
+    ASSERT_NOT_NULL(one);
 }
