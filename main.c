@@ -5,10 +5,10 @@ int main() {
     return test_main();
 }
 
-TEST(Hello, Hello) {
-    printf("hello\n");
+TEST(HelloWorld, EXPECT_EQUAL) {
+    ASSERT_EQ(1,1);
 }
 
-TEST(Hello2, Hello2) {
-    printf("hello\n");
+TEST(HelloWorld, EXPECT_EQUAL_FAIL) {
+    ASSERT_EQ(1,1);
 }
