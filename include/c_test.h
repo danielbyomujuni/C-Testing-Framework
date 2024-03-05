@@ -2,13 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define EXIT_FAILURE -1
-#define STATUS_LENGTH 7
 #define MAX_GROUP_LENGTH 80
 #define STR(x) #x
 
 //public macros
-
 /**
  * --TEST-- \n
  * A Macro that creates and registers a unit test
@@ -156,7 +153,7 @@ static void sort_tests(test_struct **tests, int test_len) {//sort all the tests
 }
 
 static int execute_tests(test_struct *const *tests, int test_len) {
-    int did_test_fail = 0;
+    int failed_tests = 0;
     char current_group[MAX_GROUP_LENGTH];
     for (int i = 0; i < test_len; i++) {
         if (strcmp(current_group, tests[i]->group_name) != 0) {
@@ -165,10 +162,12 @@ static int execute_tests(test_struct *const *tests, int test_len) {
         }
         tests[i]->run(tests[i]);
         if (tests[i]->did_test_pass != 1) {
-            did_test_fail = EXIT_FAILURE;
+            failed_tests++;
         }
     }
-    return did_test_fail;
+
+    printf("Results: %d Tests Passed out of %d\n",(test_len - failed_tests), test_len);
+    return failed_tests == 0 ? 0 : EXIT_FAILURE;
 }
 
 int test_main() {
