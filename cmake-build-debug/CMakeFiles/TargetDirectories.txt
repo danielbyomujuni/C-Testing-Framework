@@ -1,0 +1,3 @@
+/Users/danielbyomujuni/Software Development/c_testing_framework/cmake-build-debug/CMakeFiles/c_testing_framework.dir
+/Users/danielbyomujuni/Software Development/c_testing_framework/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/danielbyomujuni/Software Development/c_testing_framework/cmake-build-debug/CMakeFiles/rebuild_cache.dir
