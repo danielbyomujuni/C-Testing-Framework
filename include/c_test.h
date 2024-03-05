@@ -108,7 +108,7 @@ static int run_tests() {
             temp_arr[i] = tests[i];
         }
         free(tests);
-        tests = calloc(test_len,sizeof(struct test_struct *));
+        tests = calloc(test_len + 1,sizeof(struct test_struct *));
         for (int i = 0; i < test_len; i++) {
             tests[i] = temp_arr[i];
         }
@@ -118,8 +118,8 @@ static int run_tests() {
         test_struct *new_test = calloc(1, sizeof(test_struct));
         *new_test = temp_test;
         tests[test_len - 1] = new_test;
-
     }
+
 
     for(int i=0; i<test_len; i++){
         for(int j=i+1; j<test_len; j++){
@@ -143,7 +143,10 @@ static int run_tests() {
             did_test_fail = EXIT_FAILURE;
         }
     }
-
+    for (int i = 0; i < test_len; i++) {
+        free(tests[i]);
+    }
+    free(tests);
     return did_test_fail;
 }
 
