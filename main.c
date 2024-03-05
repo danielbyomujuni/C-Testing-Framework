@@ -25,6 +25,15 @@ TEST(GoodbyeWorld, EXPECT_EQUAL) {
     ASSERT_EQ(1,1);
 }
 
+TEST(GoodbyeWorldFail, EXPECT_EQUAL_FAIL) {
+    ASSERT_EQ(1,2);
+}
+
+TEST(GoodbyeWorldFail, EXPECT_EQUAL_FAIL_Not) {
+    ASSERT_NOT_EQ(1,1);
+}
+
+
 TEST(GoodbyeWorld, EXPECT_NOT_EQUAL) {
     ASSERT_NOT_EQ(1,2);
 }

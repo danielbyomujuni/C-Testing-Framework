@@ -5,6 +5,8 @@
 #define EXIT_FAILURE -1
 #define STATUS_LENGTH 7
 #define MAX_GROUP_LENGTH 80
+#define STR(x) #x
+
 //public macros
 
 /**
@@ -29,7 +31,7 @@
 do {                      \
     if (x != y) {         \
         self->did_test_pass = 0;\
-        test_failed(self->test_name);     \
+        test_failed_expect(self->test_name, STR(y), STR(x));     \
         return; \
     }                     \
     self->did_test_pass = 1;\
@@ -40,7 +42,7 @@ do {                      \
 do {                      \
     if (x == y) {         \
         self->did_test_pass = 0;\
-        test_failed(self->test_name);     \
+        test_failed_not_expect(self->test_name, STR(y), STR(x)); \
         return; \
     }                     \
     self->did_test_pass = 1;\
@@ -50,15 +52,13 @@ do {                      \
 #define ASSERT_TRUE( x ) ASSERT_EQ(x, 1)
 #define ASSERT_FALSE( x ) ASSERT_EQ(x, 0)
 
-
-
+//Private Macros and structures
 typedef struct test_struct {
     const char* group_name;
     const char* test_name;
     int did_test_pass;
     void (*run)(struct test_struct *self);
 } test_struct;
-
 #if defined(__APPLE__)
 #define REGSITER_TEST __attribute__((used, section("__DATA,c_test")))
 #elif defined(__unix__)
@@ -69,6 +69,7 @@ typedef struct test_struct {
 extern const test_struct* const __start_c_test __asm("section$start$__DATA$c_test");
 extern const test_struct* const __stop_c_test __asm("section$end$__DATA$c_test");
 __attribute__((used, section("__DATA,c_test"))) const test_struct* const dummy = NULL;
+
 #elif defined(__unix__)
 extern const test_struct* const __start_rktest;
 extern const test_struct* const __stop_rktest;
@@ -78,49 +79,71 @@ __attribute__((used, section("c_test"))) const test_struct* const dummy = NULL;
 #define TEST_DATA_BEGIN (&__start_c_test)
 #define TEST_DATA_END (&__stop_c_test)
 
+static void get_all_tests(test_struct ***tests, int *test_len);
+static void sort_tests(test_struct **tests, int test_len);
+static int execute_tests(test_struct *const *tests, int test_len);
+
 static void test_passed(const char* testName) {
-    int padlen = ( STATUS_LENGTH - strlen("Passed")) / 2;
-    printf("  \033[0;32m[ %*s%s%*s ]", padlen, "", "Passed", padlen, "");
-    printf("\033[0;37m %s\n", testName);
+    printf("  \033[0;32m[ PASSED ]\033[0;37m %s\n", testName);
 }
 
-static void test_failed(const char* testName) {
-    int padlen = ( STATUS_LENGTH - strlen("Failed")) / 2;
-    printf("  \033[0;31m[ %*s%s%*s ]", padlen, "", "Failed", padlen, "");
-    printf("\033[0;37m %s\n", testName);
+static void test_failed_expect(const char* testName, char* expected, char* recived) {
+    printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
+    printf("\033[0;31m     Expected: %s\033[0;37m\n", expected);
+    printf("\033[0;31m     Actual:   %s\033[0;37m\n", recived);
 }
 
+static void test_failed_not_expect(const char* testName, char* expected, char* received) {
+    printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
+    printf("\033[0;31m     Did Not Expect: %s\033[0;37m\n", expected);
+    printf("\033[0;31m     Received:       %s\033[0;37m\n", received);
+}
 static int run_tests() {
+    //create test array
+    test_struct **tests;
+    int test_len;
+    //get and run the tests
+    get_all_tests(&tests, &test_len);
+    sort_tests(tests, test_len);
+    int did_test_fail = execute_tests(tests, test_len);
 
-    //get tests
-    //sort them into groups
-    //run the tests
-    test_struct **tests = calloc(0, sizeof(struct test_struct *));
-    int test_len = 0;
-    //create tests
+    //clean up
+    for (int i = 0; i < test_len; i++) {
+        free(tests[i]);
+    }
+    //return results
+    free(tests);
+    return did_test_fail;
+}
+
+
+static void get_all_tests(test_struct ***tests, int *test_len) {
+    (*tests) = calloc(0, sizeof(struct test_struct *));
+    (*test_len) = 0;//read in all the tests
     for (const test_struct * const* it = TEST_DATA_BEGIN; it != TEST_DATA_END; it++) {
         if (*it == NULL) {
             continue;
         }
         //
-        test_struct *temp_arr[test_len];
-        for (int i = 0; i < test_len; i++) {
-            temp_arr[i] = tests[i];
+        test_struct *temp_arr[(*test_len)];
+        for (int i = 0; i < (*test_len); i++) {
+            temp_arr[i] = (*tests)[i];
         }
-        free(tests);
-        tests = calloc(test_len + 1,sizeof(struct test_struct *));
-        for (int i = 0; i < test_len; i++) {
-            tests[i] = temp_arr[i];
+        free((*tests));
+        (*tests) = calloc((*test_len) + 1, sizeof(struct test_struct *));
+        for (int i = 0; i < (*test_len); i++) {
+            (*tests)[i] = temp_arr[i];
         }
-        test_len++;
+        (*test_len)++;
         test_struct temp_test = **it;
 
         test_struct *new_test = calloc(1, sizeof(test_struct));
         *new_test = temp_test;
-        tests[test_len - 1] = new_test;
+        (*tests)[(*test_len) - 1] = new_test;
     }
+}
 
-
+static void sort_tests(test_struct **tests, int test_len) {//sort all the tests
     for(int i=0; i<test_len; i++){
         for(int j=i+1; j<test_len; j++){
             if(strcmp(tests[i]->group_name,tests[j]->group_name)>0){
@@ -130,7 +153,9 @@ static int run_tests() {
             }
         }
     }
+}
 
+static int execute_tests(test_struct *const *tests, int test_len) {
     int did_test_fail = 0;
     char current_group[MAX_GROUP_LENGTH];
     for (int i = 0; i < test_len; i++) {
@@ -143,10 +168,6 @@ static int run_tests() {
             did_test_fail = EXIT_FAILURE;
         }
     }
-    for (int i = 0; i < test_len; i++) {
-        free(tests[i]);
-    }
-    free(tests);
     return did_test_fail;
 }
 
