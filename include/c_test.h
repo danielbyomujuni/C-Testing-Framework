@@ -31,7 +31,7 @@
 do {                      \
     if (x != y) {         \
         self->did_test_pass = 0;\
-        test_failed(self->test_name, STR(y), STR(x));     \
+        test_failed_expect(self->test_name, STR(y), STR(x));     \
         return; \
     }                     \
     self->did_test_pass = 1;\
@@ -42,7 +42,7 @@ do {                      \
 do {                      \
     if (x == y) {         \
         self->did_test_pass = 0;\
-        test_failed(self->test_name, STR(y), STR(x)); \
+        test_failed_not_expect(self->test_name, STR(y), STR(x)); \
         return; \
     }                     \
     self->did_test_pass = 1;\
@@ -87,12 +87,17 @@ static void test_passed(const char* testName) {
     printf("  \033[0;32m[ PASSED ]\033[0;37m %s\n", testName);
 }
 
-static void test_failed(const char* testName, char* expected, char* recived) {
+static void test_failed_expect(const char* testName, char* expected, char* recived) {
     printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
     printf("\033[0;31m     Expected: %s\033[0;37m\n", expected);
     printf("\033[0;31m     Actual:   %s\033[0;37m\n", recived);
 }
 
+static void test_failed_not_expect(const char* testName, char* expected, char* received) {
+    printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
+    printf("\033[0;31m     Did Not Expect: %s\033[0;37m\n", expected);
+    printf("\033[0;31m     Received:       %s\033[0;37m\n", received);
+}
 static int run_tests() {
     //create test array
     test_struct **tests;
