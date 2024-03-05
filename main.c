@@ -58,3 +58,19 @@ TEST(Group4, EXPECT_FALSE) {
 TEST(Group5, EXPECT_FALSE) {
     ASSERT_FALSE(0);
 }
+
+TEST(HelloNullWorld, EXPECT_NULL) {
+    ASSERT_NULL(NULL);
+}
+
+TEST(HelloNullWorld, EXPECT_NOT_NULL) {
+    ASSERT_NULL(1);
+}
+
+TEST(HelloNullWorld, NOT_EXPECT_NULL_BUT_GOT) {
+    ASSERT_NOT_NULL(NULL);
+}
+
+TEST(HelloNullWorld, NOT_EXPECT_NOT_NULL) {
+    ASSERT_NOT_NULL(1);
+}

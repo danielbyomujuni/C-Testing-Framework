@@ -51,6 +51,8 @@ do {                      \
 
 #define ASSERT_TRUE( x ) ASSERT_EQ(x, 1)
 #define ASSERT_FALSE( x ) ASSERT_EQ(x, 0)
+#define ASSERT_NULL( x ) ASSERT_EQ((void *) x, NULL)
+#define ASSERT_NOT_NULL( x ) ASSERT_NOT_EQ(x, NULL)
 
 //Private Macros and structures
 typedef struct test_struct {
