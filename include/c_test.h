@@ -37,9 +37,9 @@ do {                      \
     if (x != y) {         \
         self->did_test_pass = 0; \
         char x_result[MAX_STRING_LENGTH];\
-        snprintf(x_result, MAX_STRING_LENGTH, "%x", x);                  \
+        snprintf(x_result, MAX_STRING_LENGTH, "%d", x);                  \
         char y_result[MAX_STRING_LENGTH]; \
-        snprintf(y_result, MAX_STRING_LENGTH, "%x", y);   \
+        snprintf(y_result, MAX_STRING_LENGTH, "%d", y);   \
         test_failed_expect(self->test_name, x_result, y_result);     \
         return; \
     }                     \
@@ -51,9 +51,9 @@ do {                      \
     if (x == y) {         \
         self->did_test_pass = 0; \
         char x_result[MAX_STRING_LENGTH];\
-        snprintf(x_result, MAX_STRING_LENGTH, "%x", x);                  \
+        snprintf(x_result, MAX_STRING_LENGTH, "%d", x);                  \
         char y_result[MAX_STRING_LENGTH]; \
-        snprintf(y_result, MAX_STRING_LENGTH, "%x", y);   \
+        snprintf(y_result, MAX_STRING_LENGTH, "%d", y);   \
         test_failed_not_expect(self->test_name,  x_result, y_result); \
         return; \
     }                     \
