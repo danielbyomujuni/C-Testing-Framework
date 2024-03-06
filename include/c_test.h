@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-<<<<<<< include/c_test.h
-
 // c_test.h
 #ifndef C_TESTING_FRAMEWORK_C_TEST_H
 #define C_TESTING_FRAMEWORK_C_TEST_H
