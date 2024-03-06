@@ -277,13 +277,18 @@ static int execute_tests(test_struct *const *tests, int test_len) {
         }
         tests[i]->run(tests[i]);
         if (tests[i]->did_test_pass != 1) {
-            did_test_fail = EXIT_FAILURE;
+            did_test_fail++;
         } else {
             test_passed(tests[i]->test_name);
         }
 
     }
-    return did_test_fail;
+
+    printf("Test Results: %d passed out of %d tests", (test_len - did_test_fail), test_len);
+    if (did_test_fail != 0) {
+        return EXIT_FAILURE;
+    }
+    return 0;
 }
 
 int test_main() {
