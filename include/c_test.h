@@ -290,6 +290,8 @@ static int execute_tests(test_struct *const *tests, int test_len) {
         tests[i]->run(tests[i]);
         if (tests[i]->did_test_pass != 1) {
             failed_tests++;
+        } else {
+            test_passed(tests[i]->test_name);
         }
 
     }
