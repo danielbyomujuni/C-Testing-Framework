@@ -32,53 +32,18 @@
     const test_struct* const GROUP##_##NAME##_data##_##ptr = &GROUP##_##NAME;\
     void GROUP##_##NAME##_impl(struct test_struct *self)
 
-#define ASSERT_EQ(x, y) \
-do {                      \
-    if (x != y) {         \
-        self->did_test_pass = 0; \
-        char x_result[MAX_STRING_LENGTH];\
-        snprintf(x_result, MAX_STRING_LENGTH, "%d", x);                  \
-        char y_result[MAX_STRING_LENGTH]; \
-        snprintf(y_result, MAX_STRING_LENGTH, "%d", y);   \
-        test_failed_expect(self->test_name, x_result, y_result);     \
-        return; \
-    }                     \
-    self->did_test_pass = 1;\
-} while (0)
+#define ASSERT_EQ(x, y) NEKOTEST_ASSERT_VAR_CMP(x != y, x, y, "%d", test_failed_expect)
+#define ASSERT_NOT_EQ(x, y) NEKOTEST_ASSERT_VAR_CMP(x == y, x, y, "%d", test_failed_not_expect)
 
-#define ASSERT_NOT_EQ(x, y) \
-do {                      \
-    if (x == y) {         \
-        self->did_test_pass = 0; \
-        char x_result[MAX_STRING_LENGTH];\
-        snprintf(x_result, MAX_STRING_LENGTH, "%d", x);                  \
-        char y_result[MAX_STRING_LENGTH]; \
-        snprintf(y_result, MAX_STRING_LENGTH, "%d", y);   \
-        test_failed_not_expect(self->test_name,  x_result, y_result); \
-        return; \
-    }                     \
-    self->did_test_pass = 1;\
-} while (0)
+#define ASSERT_TRUE(x) ASSERT_EQ(x, 1)
+#define ASSERT_FALSE(x) ASSERT_EQ(x, 0)
 
-#define ASSERT_POINTER_EQ(x, y) \
-do {                      \
-    if (x != y) {         \
-        self->did_test_pass = 0;\
-        test_failed_expect_pointer(self->test_name, y, x);     \
-        return; \
-    }                     \
-    self->did_test_pass = 1;\
-} while (0)
+#define ASSERT_NULL(x) ASSERT_POINTER_EQ(x, NULL)
+#define ASSERT_NOT_NULL(x) ASSERT_POINTER_NOT_EQ(x, NULL)
 
-#define ASSERT_POINTER_NOT_EQ(x, y) \
-do {                      \
-    if (x == y) {         \
-        self->did_test_pass = 0;\
-        test_failed_not_expect_pointer(self->test_name, y, x); \
-        return; \
-    }                     \
-    self->did_test_pass = 1;\
-} while (0)
+#define ASSERT_POINTER_EQ(x, y) NEKOTEST_ASSERT_VAR_CMP(x != y, x, y, "%p", test_failed_expect)
+#define ASSERT_POINTER_NOT_EQ(x, y) NEKOTEST_ASSERT_VAR_CMP(x == y, x, y, "%p", test_failed_not_expect)
+
 
 #define ASSERT_ARRAY_EQ(x, y) \
 do {                            \
@@ -128,12 +93,23 @@ do {                            \
     test_failed_not_expect(self->test_name, x_buf, y_buf);     \
 } while (0)
 
-
-#define ASSERT_TRUE(x) ASSERT_EQ(x, 1)
-#define ASSERT_FALSE(x) ASSERT_EQ(x, 0)
-
-#define ASSERT_NULL(x) ASSERT_POINTER_EQ(x, NULL)
-#define ASSERT_NOT_NULL(x) ASSERT_POINTER_NOT_EQ(x, NULL)
+#define NEKOTEST_ASSERT_VAR_CMP(compare_expression, x, y, format_str, fail_print_func) \
+do {                                                                  \
+    if (compare_expression) {                                         \
+        self->did_test_pass = 0;                                      \
+        char x_result[MAX_STRING_LENGTH];                             \
+        if (x == NULL) { strcpy (x_result,"NULL"); } else {                   \
+            snprintf(x_result, MAX_STRING_LENGTH, format_str, x);     \
+        }                                                             \
+        char y_result[MAX_STRING_LENGTH];                                              \
+        if (y == NULL) { strcpy (y_result,"NULL"); } else {                                    \
+            snprintf(y_result, MAX_STRING_LENGTH, format_str, y);                          \
+        }                                                                                 \
+        fail_print_func(self->test_name, y_result, x_result); \
+        return; \
+    }                     \
+    self->did_test_pass = 1;\
+} while (0)
 
 //Private Macros and structures
 typedef struct test_struct {
@@ -143,10 +119,6 @@ typedef struct test_struct {
 
     void (*run)(struct test_struct *self);
 } test_struct;
-#define is_same_type(a, b)  __builtin_types_compatible_p(typeof(a), typeof(b))
-#define is_pointer_or_array(p)  (__builtin_classify_type(p) == 5)
-#define decay(p)  (&*__builtin_choose_expr(is_pointer_or_array(p), p, NULL))
-#define is_pointer(p)  is_same_type(p, decay(p))
 
 #if defined(__APPLE__)
 #define REGSITER_TEST __attribute__((used, section("__DATA,c_test")))
@@ -158,7 +130,6 @@ typedef struct test_struct {
 extern const test_struct* const __start_c_test __asm("section$start$__DATA$c_test");
 extern const test_struct* const __stop_c_test __asm("section$end$__DATA$c_test");
 __attribute__((used, section("__DATA,c_test"))) static const test_struct* const dummy = NULL;
-
 #elif defined(__unix__)
 extern const test_struct* const __start_rktest;
 extern const test_struct* const __stop_rktest;
@@ -168,15 +139,10 @@ __attribute__((used, section("c_test"))) const test_struct* const dummy = NULL;
 #define TEST_DATA_BEGIN (&__start_c_test)
 #define TEST_DATA_END (&__stop_c_test)
 
+
 static void get_all_tests(test_struct ***tests, int *test_len);
-
 static void sort_tests(test_struct **tests, int test_len);
-
 static int execute_tests(test_struct *const *tests, int test_len);
-
-static void test_passed(const char *testName) {
-    printf("  \033[0;32m[ PASSED ]\033[0;37m %s\n", testName);
-}
 
 static void test_failed_expect(const char* testName, char* received, char* expected) {
     printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
@@ -188,23 +154,6 @@ static void test_failed_not_expect(const char* testName, char* received, char* e
     printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
     printf("\033[0;31m     Did Not Expect: %s\033[0;37m\n", expected);
     printf("\033[0;31m     Received:       %s\033[0;37m\n", received);
-}
-
-#define print_pointer(prefix, x) \
-        x == NULL ?      \
-        printf("\033[0;31m     %s NULL\033[0;37m\n", prefix) : \
-        printf("\033[0;31m     %s %p\033[0;37m\n", prefix, x)
-
-static void test_failed_expect_pointer(const char *testName, void *expected, void *received) {
-    printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
-    print_pointer("Expected:", expected);
-    print_pointer("Received:", received);
-}
-
-static void test_failed_not_expect_pointer(const char *testName, void *expected, void *received) {
-    printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
-    print_pointer("Did Not Expect:", expected);
-    print_pointer("Received:      ", received);
 }
 
 #define array_to_string(str, arr, arr_len) \
@@ -291,7 +240,7 @@ static int execute_tests(test_struct *const *tests, int test_len) {
         if (tests[i]->did_test_pass != 1) {
             failed_tests++;
         } else {
-            test_passed(tests[i]->test_name);
+            printf("  \033[0;32m[ PASSED ]\033[0;37m %s\n", tests[i]->test_name);
         }
 
     }
