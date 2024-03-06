@@ -29,7 +29,7 @@ TEST(GoodbyeWorldFail, EXPECT_EQUAL_FAIL) {
     ASSERT_EQ(1,2);
 }
 
-TEST(GoodbyeWorldFail, EXPECT_EQUAL_FAIL_Not) {
+TEST(GoodbyeWorldFail, EXPECT_EQUAL_FAIL_NOT) {
     ASSERT_NOT_EQ(1,1);
 }
 

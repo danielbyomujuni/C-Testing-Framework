@@ -3,5 +3,10 @@ project(c_testing_framework C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(c_testing_framework main.c
-        include/c_test.h)
+add_executable(c_testing_framework
+        main.c
+        include/c_test.h
+        samples/Aritmetic/TestMath.c
+        samples/Aritmetic/Math.c
+        samples/Aritmetic/Math.h
+)

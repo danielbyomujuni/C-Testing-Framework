@@ -2,14 +2,20 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define STATUS_LENGTH 7
+<<<<<<< include/c_test.h
+
+// c_test.h
+#ifndef C_TESTING_FRAMEWORK_C_TEST_H
+#define C_TESTING_FRAMEWORK_C_TEST_H
+
+
 #define MAX_GROUP_LENGTH 80
-#define MAX_STRING_LENGTH 256
+#define MAX_STRING_LENGTH 128
+#define STATUS_LENGTH 7
 #define STR(x) #x \
 
 
 //public macros
-
 /**
  * --TEST-- \n
  * A Macro that creates and registers a unit test
@@ -17,13 +23,13 @@
  * @param Name the name of what you are testing
  */
 #define TEST(GROUP, NAME) \
-    void GROUP##_##NAME##_impl(struct test_struct *self); \
-    const test_struct GROUP##_##NAME = { \
-        .group_name = #GROUP, \
-        .test_name = #NAME,     \
-        .did_test_pass = 0, \
-        .run = &GROUP##_##NAME##_impl \
-    };                       \
+	void GROUP##_##NAME##_impl(struct test_struct *self); \
+	const test_struct GROUP##_##NAME = { \
+		.group_name = #GROUP, \
+		.test_name = #NAME,     \
+        .did_test_pass = 1, \
+		.run = &GROUP##_##NAME##_impl \
+	};                       \
     REGSITER_TEST \
     const test_struct* const GROUP##_##NAME##_data##_##ptr = &GROUP##_##NAME;\
     void GROUP##_##NAME##_impl(struct test_struct *self)
@@ -31,8 +37,12 @@
 #define ASSERT_EQ(x, y) \
 do {                      \
     if (x != y) {         \
-        self->did_test_pass = 0;\
-        test_failed_expect(self->test_name, STR(y), STR(x));     \
+        self->did_test_pass = 0; \
+        char x_result[MAX_STRING_LENGTH];\
+        snprintf(x_result, MAX_STRING_LENGTH, "%x", x);                  \
+        char y_result[MAX_STRING_LENGTH]; \
+        snprintf(y_result, MAX_STRING_LENGTH, "%x", y);   \
+        test_failed_expect(self->test_name, x_result, y_result);     \
         return; \
     }                     \
     self->did_test_pass = 1;\
@@ -41,8 +51,12 @@ do {                      \
 #define ASSERT_NOT_EQ(x, y) \
 do {                      \
     if (x == y) {         \
-        self->did_test_pass = 0;\
-        test_failed_not_expect(self->test_name, STR(y), STR(x)); \
+        self->did_test_pass = 0; \
+        char x_result[MAX_STRING_LENGTH];\
+        snprintf(x_result, MAX_STRING_LENGTH, "%x", x);                  \
+        char y_result[MAX_STRING_LENGTH]; \
+        snprintf(y_result, MAX_STRING_LENGTH, "%x", y);   \
+        test_failed_not_expect(self->test_name,  x_result, y_result); \
         return; \
     }                     \
     self->did_test_pass = 1;\
@@ -143,9 +157,9 @@ typedef struct test_struct {
 #endif
 
 #if defined(__APPLE__)
-extern const test_struct *const __start_c_test __asm("section$start$__DATA$c_test");
-extern const test_struct *const __stop_c_test __asm("section$end$__DATA$c_test");
-__attribute__((used, section("__DATA,c_test"))) const test_struct *const dummy = NULL;
+extern const test_struct* const __start_c_test __asm("section$start$__DATA$c_test");
+extern const test_struct* const __stop_c_test __asm("section$end$__DATA$c_test");
+__attribute__((used, section("__DATA,c_test"))) static const test_struct* const dummy = NULL;
 
 #elif defined(__unix__)
 extern const test_struct* const __start_rktest;
@@ -166,13 +180,13 @@ static void test_passed(const char *testName) {
     printf("  \033[0;32m[ PASSED ]\033[0;37m %s\n", testName);
 }
 
-static void test_failed_expect(const char *testName, char *expected, char *recived) {
+static void test_failed_expect(const char* testName, char* received, char* expected) {
     printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
     printf("\033[0;31m     Expected: %s\033[0;37m\n", expected);
-    printf("\033[0;31m     Actual:   %s\033[0;37m\n", recived);
+    printf("\033[0;31m     Received: %s\033[0;37m\n", received);
 }
 
-static void test_failed_not_expect(const char *testName, char *expected, char *received) {
+static void test_failed_not_expect(const char* testName, char* received, char* expected) {
     printf("  \033[0;31m[ FAILED ] \033[0;37m %s\n", testName);
     printf("\033[0;31m     Did Not Expect: %s\033[0;37m\n", expected);
     printf("\033[0;31m     Received:       %s\033[0;37m\n", received);
@@ -265,7 +279,7 @@ static void sort_tests(test_struct **tests, int test_len) {//sort all the tests
 }
 
 static int execute_tests(test_struct *const *tests, int test_len) {
-    int did_test_fail = 0;
+    int failed_tests = 0;
     char current_group[MAX_GROUP_LENGTH];
 
 
@@ -277,20 +291,17 @@ static int execute_tests(test_struct *const *tests, int test_len) {
         }
         tests[i]->run(tests[i]);
         if (tests[i]->did_test_pass != 1) {
-            did_test_fail++;
-        } else {
-            test_passed(tests[i]->test_name);
+            failed_tests++;
         }
 
     }
 
-    printf("Test Results: %d passed out of %d tests", (test_len - did_test_fail), test_len);
-    if (did_test_fail != 0) {
-        return EXIT_FAILURE;
-    }
-    return 0;
+    printf("Results: %d Tests Passed out of %d\n",(test_len - failed_tests), test_len);
+    return failed_tests == 0 ? 0 : EXIT_FAILURE;
 }
 
-int test_main() {
+static int test_main() {
     return run_tests();
 }
+
+#endif /* C_TESTING_FRAMEWORK_C_TEST_H */
